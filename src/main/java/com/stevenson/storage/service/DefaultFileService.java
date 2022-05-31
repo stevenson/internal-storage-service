@@ -23,9 +23,9 @@ public class DefaultFileService implements FileService{
     public StorageModel uploadFile(FileUploadRequest request) throws IllegalStateException, IOException {
         String relativeFilePath = "/";
         if(request.getDirectory() != null){
-            relativeFilePath+=request.getDirectory();
+            relativeFilePath+=request.getDirectory()+"/";
         }
-        relativeFilePath += "/"+ request.getFile().getOriginalFilename();
+        relativeFilePath += request.getFile().getOriginalFilename();
         System.out.println(relativeFilePath);
         File actualFile = new File(defaultDirectory+relativeFilePath);
         if (!actualFile.getParentFile().exists()) {

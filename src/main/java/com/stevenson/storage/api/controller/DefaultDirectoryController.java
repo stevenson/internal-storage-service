@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.io.IOException;
 import java.util.List;
 
-@RequestMapping("api/v1/directory")
+@RequestMapping("api/v1/directories")
 @RestController
 public class DefaultDirectoryController {
     @Autowired
