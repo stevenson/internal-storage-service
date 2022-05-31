@@ -27,3 +27,8 @@
   - processing requests is left to the controller layer.
 - I did not use any persistence layer that would need an orm because the File libraries are sufficient
   - if the need would arise we can just create an repo for any specific datasource but for this case we can just use File and Paths
+
+### TODO
+1. create a model for exceptions and a rest advice that would handle it
+   - add tests
+2. increase test coverage

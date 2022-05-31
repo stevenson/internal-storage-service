@@ -20,8 +20,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-class DefaultFileControllerTest {
-
+class DefaultDirectoryControllerTest {
     @LocalServerPort
     private int port;
 
@@ -33,16 +32,16 @@ class DefaultFileControllerTest {
 
     private StorageModel sm = StorageModel.builder()
             .name("somedirectory")
-                .type("file")
-                .size(100000)
-                .createdAt(LocalDateTime.now())
+            .type("file")
+            .size(100000)
+            .createdAt(LocalDateTime.now())
             .build();
     @Test
-    public void postShouldUploadFile() throws IOException {
+    public void postShouldCreateDirectory() throws IOException {
         given(this.mockService.uploadFile(any())).willReturn(sm);
 
         ResponseEntity<StorageModel> response = restTemplate.postForEntity(
-                "http://localhost:" + port + "/api/v1/files",
+                "http://localhost:" + port + "/api/v1/directories",
                 sm,
                 StorageModel.class);
         assertThat(response, is(notNullValue()));

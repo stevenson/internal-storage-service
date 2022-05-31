@@ -26,7 +26,6 @@ public class DefaultFileService implements FileService{
             relativeFilePath+=request.getDirectory()+"/";
         }
         relativeFilePath += request.getFile().getOriginalFilename();
-        System.out.println(relativeFilePath);
         File actualFile = new File(defaultDirectory+relativeFilePath);
         if (!actualFile.getParentFile().exists()) {
             actualFile.getParentFile().mkdirs();
@@ -62,11 +61,8 @@ public class DefaultFileService implements FileService{
         if(attribs.isDirectory()) {
             String folderPath = defaultDirectory+"/"+relativeFilePath;
             File folder = new File(folderPath);
-            BasicFileAttributes innerFileAttrib = Files.readAttributes(Paths.get(folder.getPath()), BasicFileAttributes.class);
             File[] files = folder.listFiles();
-            int count = files.length;
             for (File file : files) {
-                System.out.println(file.getPath());
                 String innerFilePath = file.getPath().split(defaultDirectory)[1];
                 StorageModel fileDto = getStorageModel(innerFilePath);
                 if (!file.isFile()) {
@@ -82,7 +78,6 @@ public class DefaultFileService implements FileService{
     {
         long size = 0;
         File[] files = folder.listFiles();
-        int count = files.length;
         for (File file : files) {
             if (file.isFile()) {
                 size += file.length();
