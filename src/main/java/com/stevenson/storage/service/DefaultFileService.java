@@ -1,8 +1,7 @@
 package com.stevenson.storage.service;
 
-import com.stevenson.storage.api.controller.dto.DirectoryDetailResponse;
-import com.stevenson.storage.api.controller.dto.FileUploadRequest;
-import com.stevenson.storage.api.controller.dto.FileDetailResponse;
+import com.stevenson.storage.api.controller.request.FileUploadRequest;
+import com.stevenson.storage.model.StorageModel;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -13,52 +12,36 @@ import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.TimeZone;
 
 @Service
 public class DefaultFileService implements FileService{
-    private final String defaultDirectory = "/tmp/directory/";
+    private static final String defaultDirectory = "/tmp/directory/";
 
-    public FileDetailResponse uploadFile(FileUploadRequest request) throws IllegalStateException, IOException {
-
-        String pathName = defaultDirectory;
+    public StorageModel uploadFile(FileUploadRequest request) throws IllegalStateException, IOException {
+        String relativeFilePath = "/";
         if(request.getDirectory() != null){
-            pathName+=request.getDirectory()+'/';
+            relativeFilePath+=request.getDirectory();
         }
-        File actualFile = new File(pathName+request.getFile().getName());
+        relativeFilePath += "/"+ request.getFile().getOriginalFilename();
+        System.out.println(relativeFilePath);
+        File actualFile = new File(defaultDirectory+relativeFilePath);
         if (!actualFile.getParentFile().exists()) {
             actualFile.getParentFile().mkdirs();
         }
         request.getFile().transferTo(actualFile);
-        long timestamp = actualFile.lastModified();
-        FileDetailResponse fileDto = FileDetailResponse.builder()
-                .name(request.getFile().getOriginalFilename())
-                .directory(request.getDirectory())
-                .size(request.getFile().getSize())
-                .createdAt(LocalDateTime.ofInstant(
-                        Instant.ofEpochMilli(timestamp), TimeZone.getDefault().toZoneId() ))
-                .build();
-
-        return fileDto;
+        return getStorageModel(relativeFilePath);
     }
 
     @Override
-    public FileDetailResponse retrieveFile(String relativeFilePath) throws IOException {
-        Path file = Paths.get(defaultDirectory+'/'+relativeFilePath);
-        BasicFileAttributes attribs = Files.readAttributes(file, BasicFileAttributes.class);
-        FileDetailResponse fileDto = FileDetailResponse.builder()
-                .name(String.valueOf(file.getFileName()))
-                .directory(relativeFilePath)
-                .size(attribs.size())
-                .createdAt(LocalDateTime.ofInstant(
-                        attribs.creationTime().toInstant(), TimeZone.getDefault().toZoneId() ))
-                .build();
-
-        return fileDto;
+    public StorageModel retrieveFile(String relativeFilePath) throws IOException {
+        return getStorageModel(relativeFilePath);
     }
 
     @Override
-    public DirectoryDetailResponse createDirectory(String relativeFilePath) throws IOException {
+    public StorageModel createDirectory(String relativeFilePath) throws IOException {
         Path filepath = Paths.get(defaultDirectory+"/"+relativeFilePath);
         if(!Files.exists(filepath)){
             File pathAsFile = new File(defaultDirectory+"/"+relativeFilePath);
@@ -68,21 +51,31 @@ public class DefaultFileService implements FileService{
     }
 
     @Override
-    public DirectoryDetailResponse retrieveDirectory(String relativeFilePath) throws IOException {
+    public StorageModel retrieveDirectory(String relativeFilePath) throws IOException {
+        return getStorageModel(relativeFilePath);
+    }
+    @Override
+    public List<StorageModel> retrieveDirectoryContents(String relativeFilePath) throws IOException {
+        List<StorageModel> fileModels = new ArrayList<>();
         Path filepath = Paths.get(defaultDirectory+"/"+relativeFilePath);
         BasicFileAttributes attribs = Files.readAttributes(filepath, BasicFileAttributes.class);
-        long size = attribs.size();
-        if(attribs.isDirectory()){
-            File folder = new File(defaultDirectory+"/"+relativeFilePath);
-            size = getFolderSize(folder);
+        if(attribs.isDirectory()) {
+            String folderPath = defaultDirectory+"/"+relativeFilePath;
+            File folder = new File(folderPath);
+            BasicFileAttributes innerFileAttrib = Files.readAttributes(Paths.get(folder.getPath()), BasicFileAttributes.class);
+            File[] files = folder.listFiles();
+            int count = files.length;
+            for (File file : files) {
+                System.out.println(file.getPath());
+                String innerFilePath = file.getPath().split(defaultDirectory)[1];
+                StorageModel fileDto = getStorageModel(innerFilePath);
+                if (!file.isFile()) {
+                    fileDto.setSize(getFolderSize(file));
+                }
+                fileModels.add(fileDto);
+            }
         }
-        DirectoryDetailResponse dto = DirectoryDetailResponse.builder()
-                .directory(relativeFilePath)
-                .size(size)
-                .createdAt(LocalDateTime.ofInstant(
-                        attribs.creationTime().toInstant(), TimeZone.getDefault().toZoneId() ))
-                .build();
-        return dto;
+        return fileModels;
     }
 
     private static long getFolderSize(File folder)
@@ -90,15 +83,33 @@ public class DefaultFileService implements FileService{
         long size = 0;
         File[] files = folder.listFiles();
         int count = files.length;
-        for (int i = 0; i < count; i++) {
-            if (files[i].isFile()) {
-                size += files[i].length();
-            }
-            else {
-                size += getFolderSize(files[i]);
+        for (File file : files) {
+            if (file.isFile()) {
+                size += file.length();
+            } else {
+                size += getFolderSize(file);
             }
         }
         return size;
+    }
+
+    private static StorageModel getStorageModel(String relativeFilePath) throws IOException {
+        File file = new File(defaultDirectory + relativeFilePath);
+        BasicFileAttributes basicFileAttributes = Files.readAttributes(file.toPath(), BasicFileAttributes.class);
+        String type = (basicFileAttributes.isRegularFile())? "file": "directory";
+        long size = basicFileAttributes.size();
+        if(basicFileAttributes.isDirectory()){
+            File folder = new File(defaultDirectory+"/"+relativeFilePath);
+            size = getFolderSize(folder);
+        }
+        long timestamp = basicFileAttributes.lastModifiedTime().toMillis();
+        return StorageModel.builder()
+                .name(relativeFilePath)
+                .type(type)
+                .size(size)
+                .createdAt(LocalDateTime.ofInstant(
+                        Instant.ofEpochMilli(timestamp), TimeZone.getDefault().toZoneId() ))
+                .build();
     }
 
 }

@@ -1,7 +1,7 @@
 package com.stevenson.storage.api.controller;
 
-import com.stevenson.storage.api.controller.dto.FileUploadRequest;
-import com.stevenson.storage.api.controller.dto.FileDetailResponse;
+import com.stevenson.storage.api.controller.request.FileUploadRequest;
+import com.stevenson.storage.model.StorageModel;
 import com.stevenson.storage.service.DefaultFileService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -22,7 +22,7 @@ public class DefaultFileController implements FileController {
     @PostMapping
     public ResponseEntity<?> uploadFile(FileUploadRequest request){
         try {
-            FileDetailResponse data = fileService.uploadFile(request);
+            StorageModel data = fileService.uploadFile(request);
             return new ResponseEntity<>(data, HttpStatus.OK);
         }catch (Exception e){
             return new ResponseEntity<>(e, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -31,7 +31,7 @@ public class DefaultFileController implements FileController {
     @GetMapping
     public ResponseEntity<?> retrieveFile(@RequestParam String filepath){
         try {
-            FileDetailResponse data = fileService.retrieveFile(filepath);
+            StorageModel data = fileService.retrieveFile(filepath);
             return new ResponseEntity<>(data, HttpStatus.OK);
         }catch (Exception e){
             return new ResponseEntity<>(e, HttpStatus.INTERNAL_SERVER_ERROR);

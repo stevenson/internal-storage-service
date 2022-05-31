@@ -1,4 +1,4 @@
-package com.stevenson.storage.api.controller.dto;
+package com.stevenson.storage.api.controller.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

@@ -1,4 +1,4 @@
-package com.stevenson.storage.api.controller.dto;
+package com.stevenson.storage.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,8 +11,9 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class DirectoryDetailResponse {
-    String directory;
+public class StorageModel {
+    String name;
+    String type;
     long size;
     LocalDateTime createdAt;
 }

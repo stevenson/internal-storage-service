@@ -1,8 +1,7 @@
 package com.stevenson.storage.api.controller;
 
-import com.stevenson.storage.api.controller.dto.DirectoryDetailResponse;
-import com.stevenson.storage.api.controller.dto.DirectoryRequest;
-import com.stevenson.storage.api.controller.dto.FileDetailResponse;
+import com.stevenson.storage.api.controller.request.DirectoryRequest;
+import com.stevenson.storage.model.StorageModel;
 import com.stevenson.storage.service.DefaultFileService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -10,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.util.List;
 
 @RequestMapping("api/v1/directory")
 @RestController
@@ -23,17 +23,27 @@ public class DefaultDirectoryController {
 
     @PostMapping
     public ResponseEntity<?> createdDirectory(DirectoryRequest request) throws IOException {
-        DirectoryDetailResponse data = fileService.createDirectory(request.getPath());
+        StorageModel data = fileService.createDirectory(request.getPath());
         return new ResponseEntity<>(data, HttpStatus.OK);
     }
 
     @GetMapping
-    public ResponseEntity<?> retrieveDirectory(@RequestParam String path ){
+    public ResponseEntity<?> retrieveDirectory(@RequestParam String path) {
         try {
-            DirectoryDetailResponse data = fileService.retrieveDirectory(path);
+            StorageModel data = fileService.retrieveDirectory(path);
             return new ResponseEntity<>(data, HttpStatus.OK);
-        }catch (Exception e){
+        } catch (Exception e) {
             return new ResponseEntity<>(e, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+    @GetMapping("/contents")
+    public ResponseEntity<?> retrieveDirectoryContents(@RequestParam String path) {
+        try {
+            List<StorageModel> data = fileService.retrieveDirectoryContents(path);
+            return new ResponseEntity<>(data, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(e, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
 }
