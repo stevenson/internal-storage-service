@@ -13,9 +13,10 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 public class DefaultFileController implements FileController {
 
-    @Autowired
+
     private final DefaultFileService fileService;
 
+    @Autowired
     public DefaultFileController(DefaultFileService fileService) {
         this.fileService = fileService;
     }

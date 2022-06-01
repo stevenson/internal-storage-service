@@ -32,7 +32,7 @@ class DefaultFileControllerTest {
     private DefaultFileService mockService;
 
     private StorageModel sm = StorageModel.builder()
-            .name("somedirectory")
+            .name("someFile")
                 .type("file")
                 .size(100000)
                 .createdAt(LocalDateTime.now())
@@ -46,6 +46,17 @@ class DefaultFileControllerTest {
                 sm,
                 StorageModel.class);
         assertThat(response, is(notNullValue()));
+        assertThat(response.getBody().getName(), is("someFile"));
+        assertThat(response.getStatusCodeValue(), is(200));
     }
 
+    @Test
+    public void getShouldRetrieveSpecifiedFile() throws IOException {
+        given(this.mockService.retrieveFile(any())).willReturn(sm);
+
+        ResponseEntity<StorageModel> response = restTemplate.getForEntity(
+                "http://localhost:" + port + "/api/v1/files/?filepath=test/stevenson.png",
+                StorageModel.class);
+        assertThat(response, is(notNullValue()));
+    }
 }

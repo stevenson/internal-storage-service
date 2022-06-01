@@ -12,6 +12,8 @@ import org.springframework.http.ResponseEntity;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -31,20 +33,46 @@ class DefaultDirectoryControllerTest {
     private DefaultFileService mockService;
 
     private StorageModel sm = StorageModel.builder()
-            .name("somedirectory")
-            .type("file")
+            .type("directory")
             .size(100000)
             .createdAt(LocalDateTime.now())
             .build();
     @Test
     public void postShouldCreateDirectory() throws IOException {
-        given(this.mockService.uploadFile(any())).willReturn(sm);
+        given(this.mockService.createDirectory(any())).willReturn(sm);
 
         ResponseEntity<StorageModel> response = restTemplate.postForEntity(
                 "http://localhost:" + port + "/api/v1/directories",
                 sm,
                 StorageModel.class);
         assertThat(response, is(notNullValue()));
+        assertThat(response.getBody().getType(), is("directory"));
+        assertThat(response.getStatusCodeValue(), is(200));
     }
 
+    @Test
+    public void getShouldRetrieveSpecifiedFile() throws IOException {
+        given(this.mockService.retrieveDirectory(any())).willReturn(sm);
+
+        ResponseEntity<StorageModel> response = restTemplate.getForEntity(
+                "http://localhost:" + port + "/api/v1/directories/?path=test",
+                StorageModel.class);
+        assertThat(response, is(notNullValue()));
+        assertThat(response.getBody().getType(), is("directory"));
+        assertThat(response.getStatusCodeValue(), is(200));
+    }
+
+    @Test
+    void getContentsShouldRetrieveDirectoryContents() throws IOException {
+        List<StorageModel> sml = new ArrayList<>();
+        sml.add(sm);
+        given(this.mockService.retrieveDirectoryContents(any())).willReturn(sml);
+
+        ResponseEntity<StorageModel[]> response = restTemplate.getForEntity(
+                "http://localhost:" + port + "/api/v1/directories/contents/?path=test",
+                StorageModel[].class);
+
+        assertThat(response, is(notNullValue()));
+        assertThat(response.getStatusCodeValue(), is(200));
+    }
 }
