@@ -1,5 +1,6 @@
 package com.stevenson.storage.api.controller;
 
+import com.stevenson.storage.api.controller.exception.ApiStorageException;
 import com.stevenson.storage.api.controller.request.FileUploadRequest;
 import com.stevenson.storage.model.StorageModel;
 import com.stevenson.storage.service.DefaultFileService;
@@ -25,7 +26,7 @@ public class DefaultFileController implements FileController {
             StorageModel data = fileService.uploadFile(request);
             return new ResponseEntity<>(data, HttpStatus.OK);
         }catch (Exception e){
-            return new ResponseEntity<>(e, HttpStatus.INTERNAL_SERVER_ERROR);
+            throw new ApiStorageException("File or path being referenced is non existent");
         }
     }
     @GetMapping
@@ -34,7 +35,7 @@ public class DefaultFileController implements FileController {
             StorageModel data = fileService.retrieveFile(filepath);
             return new ResponseEntity<>(data, HttpStatus.OK);
         }catch (Exception e){
-            return new ResponseEntity<>(e, HttpStatus.INTERNAL_SERVER_ERROR);
+            throw new ApiStorageException("File or path being referenced is non existent");
         }
     }
 }

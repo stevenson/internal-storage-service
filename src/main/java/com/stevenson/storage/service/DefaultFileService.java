@@ -2,6 +2,7 @@ package com.stevenson.storage.service;
 
 import com.stevenson.storage.api.controller.request.FileUploadRequest;
 import com.stevenson.storage.model.StorageModel;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -18,7 +19,8 @@ import java.util.TimeZone;
 
 @Service
 public class DefaultFileService implements FileService{
-    private static final String defaultDirectory = "/tmp/directory/";
+    @Value("${storage.location}")
+    private String defaultDirectory;
 
     public StorageModel uploadFile(FileUploadRequest request) throws IllegalStateException, IOException {
         String relativeFilePath = "/";
@@ -88,7 +90,7 @@ public class DefaultFileService implements FileService{
         return size;
     }
 
-    private static StorageModel getStorageModel(String relativeFilePath) throws IOException {
+    private StorageModel getStorageModel(String relativeFilePath) throws IOException {
         File file = new File(defaultDirectory + relativeFilePath);
         BasicFileAttributes basicFileAttributes = Files.readAttributes(file.toPath(), BasicFileAttributes.class);
         String type = (basicFileAttributes.isRegularFile())? "file": "directory";

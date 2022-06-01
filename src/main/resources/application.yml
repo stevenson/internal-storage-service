@@ -9,3 +9,5 @@ server:
     include-stacktrace: never
     include-exception: false
   port: 8080
+storage:
+  location: "/tmp/directory/"
